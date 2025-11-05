@@ -4,14 +4,15 @@
 
 @push('styles')
     <style>
-        /* Reusando e ajustando os estilos de tabela e botão para consistência */
+        /* Estilos do Container Principal */
         .list-container {
              display: flex;
              flex-direction: column;
              align-items: center;
              width: 100%;
-             max-width: 1000px; /* Limita a largura da tabela */
+             max-width: 1000px;
         }
+        /* Estilos de Tabela (Reusados) */
         .list-table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -30,6 +31,7 @@
         .list-table tr:nth-child(even) { 
             background-color: #f2f2f2; 
         }
+        /* Estilos de Botão (Reusados) */
         .btn-list {
             display: inline-block;
             padding: 10px 15px;
@@ -39,8 +41,9 @@
             border-radius: 5px;
             text-decoration: none;
             margin-bottom: 20px;
-            align-self: flex-start; /* Alinha o botão à esquerda do container */
+            align-self: flex-start;
         }
+        /* Alertas */
         .empty { 
             padding: 20px; 
             text-align: center; 
@@ -55,7 +58,7 @@
             margin-bottom: 15px;
             width: 100%;
         }
-        /* Estilos do Título (para ficar maior e em destaque) */
+        /* Título */
         .h1-custom { 
             font-size: 32px; 
             font-weight: bold;
@@ -64,6 +67,27 @@
             text-align: center; 
             width: 100%;
         }
+        /* Estilo do Input de Pesquisa */
+        .search-input-container {
+            width: 100%; 
+            margin-bottom: 20px;
+        }
+        .search-input-container input {
+            width: 100%; 
+            padding: 8px; 
+            box-sizing: border-box; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+        }
+        /* Valor Total */
+        .total-value-container {
+             width: 100%; 
+             max-width: 1000px; 
+             text-align: right; 
+             margin-bottom: 20px; 
+             font-size: 1.2em; 
+             font-weight: bold;
+        }
     </style>
 @endpush
 
@@ -71,10 +95,27 @@
 
     <h1 class="h1-custom">Gestão de Estoque</h1>
 
+    <div class="total-value-container">
+        Valor Total do Estoque: 
+        <span style="color: #28a745;">
+            R$ {{ number_format($valorTotalEstoque, 2, ',', '.') }}
+        </span>
+    </div>
     <div class="list-container">
+        
+        @if (session('sucesso'))
+        <div class="alert-success">
+            {{ session('sucesso') }}
+        </div>
+        @endif
+
         <a href="{{ route('estoques.create') }}" class="btn-list">Adicionar Novo Item</a>
 
-        <table class="list-table">
+        <div class="search-input-container">
+            <label for="searchInput" style="font-weight: bold; margin-bottom: 5px;">Pesquisar Produto:</label>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Digite o nome do produto...">
+        </div>
+        <table class="list-table" id="estoqueTable">
             <thead>
                 <tr>
                     <th>Produto</th>
@@ -92,8 +133,17 @@
                         <td>R$ {{ number_format($item->preco_unitario, 2, ',', '.') }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->data_compra)->format('d/m/Y') }}</td>
                         <td>
-                            <a href="#">Editar</a>
-                            <a href="#">Excluir</a>
+                            <a href="{{ route('estoques.edit', $item->id) }}" style="color: #007bff; text-decoration: none; margin-right: 10px;">Editar</a>
+                            
+                            <form action="{{ route('estoques.destroy', $item->id) }}" method="POST" style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" 
+                                        style="color: #dc3545; text-decoration: none; border: none; background: none; cursor: pointer; padding: 0;"
+                                        onclick="return confirm('Tem certeza que deseja excluir este item?')">
+                                    Excluir
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @empty
@@ -106,3 +156,39 @@
     </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        function filterTable() {
+            const input = document.getElementById("searchInput");
+            
+            // Divide o texto em palavras (termos), remove espaços em branco, e converte para maiúsculas
+            const searchTerms = input.value.trim().toUpperCase().split(/\s+/).filter(term => term.length > 0);
+            
+            const table = document.getElementById("estoqueTable");
+            const tr = table.getElementsByTagName("tr");
+            
+            let td, txtValue;
+
+            for (let i = 1; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[0]; 
+                
+                if (td) {
+                    txtValue = (td.textContent || td.innerText).toUpperCase(); 
+                    
+                    // Verifica se TODOS os termos de pesquisa estão contidos no texto do produto.
+                    const allTermsMatch = searchTerms.every(term => {
+                        return txtValue.indexOf(term) > -1;
+                    });
+                    
+                    // Aplica o filtro
+                    if (searchTerms.length === 0 || allTermsMatch) {
+                        tr[i].style.display = ""; 
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }       
+            }
+        }
+    </script>
+@endpush

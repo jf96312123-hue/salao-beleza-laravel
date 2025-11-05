@@ -71,7 +71,7 @@
         <a href="{{ url('/clientes') }}">👤 Clientes</a>
         <a href="{{ url('/servicos') }}">💅 Serviços</a>
         <a href="{{ url('/funcionarios') }}">✂️ Funcionários</a>
-        <a href="{{ url('/estoques') }}">📦 Estoque</a> </nav>
+        <a href="{{ url('/estoques') }}">📦 Estoque</a> 
     </nav>
 
     <div class="content">
