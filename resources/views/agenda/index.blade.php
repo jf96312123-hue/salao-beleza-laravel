@@ -7,9 +7,24 @@
     <style>
         /* Estilos do FullCalendar e posicionamento */
         #calendar {
-            max-width: 1100px;
+            max-width: 90%; /* Aumenta o preenchimento da tela */
             margin: 0 auto;
+            height: 100%; 
+            min-height: 800px; /* Garante altura mínima para aparecer */
         }
+        
+        /* --- ESTILOS CRÍTICOS PARA CORREÇÃO DE CLIQUE (NOVO) --- */
+        .fc-timegrid-event {
+            /* Força o evento a ocupar apenas 85% da largura da coluna, liberando a faixa lateral para o clique. */
+            width: 85% !important; 
+            margin-right: 15% !important; 
+            margin-left: 0 !important;
+        }
+        /* Garante que o conteúdo do evento se ajuste à nova largura */
+        .fc-event-main-frame {
+            white-space: normal; 
+        }
+        /* FIM DA CORREÇÃO DE CLIQUE */
         
         /* --- Estilos do Modal --- */
         .modal {
@@ -73,6 +88,13 @@
 
     <h1 class="h1-custom">Agenda do Salão</h1>
 
+    <div style="width: 100%; max-width: 1100px; margin-bottom: 20px;">
+        <label for="agendaSearch" style="font-weight: bold; margin-bottom: 5px;">
+            🔍 Pesquisar Agendamento por Cliente:
+        </label>
+        <input type="text" id="agendaSearch" onkeyup="filterAgenda()" placeholder="Digite o nome do cliente..." 
+               style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px;">
+    </div>
     <div id='calendar'></div>
 
     <div id="agendamentoModal" class="modal">
@@ -174,6 +196,19 @@
                 }
             }
             
+            // NOVO: Função para disparar a pesquisa no FullCalendar
+            function filterAgenda() {
+                var searchTerm = document.getElementById('agendaSearch').value;
+                
+                if (calendar) {
+                     // CRÍTICO: Anexa o termo de pesquisa como um parâmetro 'search' na URL
+                     calendar.setOption('events', '/api/agendamentos/eventos?search=' + encodeURIComponent(searchTerm));
+                     calendar.refetchEvents(); // Força o FullCalendar a recarregar a URL com o filtro
+                }
+            }
+            window.filterAgenda = filterAgenda; // Torna a função acessível globalmente (onkeyup)
+
+
             // --- Evento de SUBMIT (Salvar/Atualizar) ---
             formAgendamento.addEventListener('submit', function(e) {
                 
@@ -206,7 +241,8 @@
                 .then(response => {
                     if (response.status === 422) { 
                         return response.json().then(data => {
-                            var errorMsg = Object.values(data.errors)[0][0];
+                            // Tenta pegar o erro do campo 'user_id' (conflito)
+                            var errorMsg = data.errors.user_id ? data.errors.user_id[0] : Object.values(data.errors)[0][0];
                             throw new Error(errorMsg);
                         });
                     }
@@ -218,7 +254,7 @@
                 .then(data => {
                     // Sucesso!
                     fecharModalFunction(); 
-                    calendar.refetchEvents(); 
+                    calendar.refetchEvents(); // Atualiza o calendário
                     
                     if (agendamentoID) {
                         alert('Agendamento ATUALIZADO com sucesso!');
@@ -284,7 +320,19 @@
                 slotMaxTime: '20:00:00', 
                 allDaySlot: false,
                 navLinks: true, 
+                slotEventOverlap: false, // Permite visualização correta de horários simultâneos
+                
+                eventStartEditable: false, // CORREÇÃO: Impede que clicar em um evento acione a edição
+                eventDurationEditable: false, // CORREÇÃO: Impede arrasto/redimensionamento
 
+                // >>>>> CÓDIGO CRÍTICO: RECURSOS (FUNCIONÁRIOS) <<<<<
+                resources: {!! json_encode($funcionarios->map(function($f) {
+                        return ['id' => $f->id, 'title' => $f->name];
+                    })) !!}
+                , // Adiciona a vírgula de forma segura após o objeto JSON
+                // >>>>> FIM DO CÓDIGO CRÍTICO <<<<<
+
+                // Onde ele busca os agendamentos (Eventos)
                 events: '/api/agendamentos/eventos', 
 
                 // Ação de 'select' (clicar em horário vago)
@@ -330,6 +378,8 @@
 
             // Renderiza o calendário
             calendar.render();
+            // Garante que o calendário seja redimensionado corretamente no carregamento
+            calendar.updateSize(); 
         });
     </script>
 @endpush

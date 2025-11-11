@@ -13,7 +13,9 @@ class FuncionarioController extends Controller
      */
     public function index()
     {
+        // Busca todos os usuários (funcionários)
         $funcionarios = User::orderBy('name')->get();
+        // Retorna a view 'funcionarios.index'
         return view('funcionarios.index', ['funcionarios' => $funcionarios]);
     }
 
@@ -26,69 +28,47 @@ class FuncionarioController extends Controller
     }
 
     /**
-     * Salvar o novo funcionário
+     * Store a newly created resource in storage.
+     * (Salvar o novo funcionário)
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        // Validação
+        // 1. Validação (Apenas Nome e Telefone)
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed', 
+            'telefone' => 'nullable|string|max:20', 
         ]);
 
-        // Criação
+        // 2. Criação do Funcionário (User)
         User::create([
             'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password), 
+            'telefone' => $request->telefone,
+            
+            // --- CAMPOS FALSOS (Obrigatórios pelo banco) ---
+            'email' => 'func_'.uniqid().'@salao.local', // Gera um e-mail único falso
+            'password' => Hash::make('12345678'), // Define uma senha padrão
         ]);
 
-        // Redirecionamento
+        // 3. Redirecionamento
         return redirect()->route('funcionarios.index')
                          ->with('sucesso', 'Funcionário cadastrado com sucesso!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        // (Não estamos usando)
-    }
+    public function show($id) { /* Não implementado */ }
+    public function edit($id) { /* Não implementado */ }
+    public function update(Request $request, $id) { /* Não implementado */ }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        // (Não estamos usando)
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        // (Não estamos usando)
-    }
-
-    /**
-     * A CORREÇÃO ESTÁ AQUI:
      * Excluir o funcionário do banco
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        // 1. Encontra o funcionário
         $funcionario = User::findOrFail($id);
-
-        // 2. Exclui o funcionário
         $funcionario->delete();
 
-        // 3. Redireciona de volta para a lista com uma mensagem
         return redirect()->route('funcionarios.index')
                          ->with('sucesso', 'Funcionário excluído com sucesso!');
     }

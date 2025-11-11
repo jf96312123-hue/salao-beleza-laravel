@@ -1,34 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adicionar Cliente</title>
+@extends('layouts.app')
+
+@section('title', 'Adicionar Novo Cliente')
+
+@push('styles')
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
-        h1 { color: #333; }
-        form { 
+        /* Estilos do formulário */
+        .form-container { 
             max-width: 600px; 
-            margin: 20px 0; 
+            margin-top: 20px; 
             padding: 20px; 
             background-color: #fff; 
             border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
         }
-        div { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"],
-        input[type="email"],
-        input[type="date"],
-        textarea {
+        .form-container div { 
+            margin-bottom: 15px; 
+        }
+        .form-container label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+        .form-container input[type="text"],
+        .form-container input[type="email"],
+        .form-container input[type="date"],
+        .form-container textarea {
             width: 100%;
             padding: 8px;
-            box-sizing: border-box; /* Garante que o padding não quebre o layout */
+            box-sizing: border-box;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
         .btn-container { text-align: right; }
-        .btn {
+        .btn-form { 
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
@@ -38,47 +42,76 @@
         }
         .btn-primary { background-color: #007bff; }
         .btn-secondary { background-color: #6c757d; margin-right: 10px; }
+        .h1-custom { 
+            font-size: 32px; 
+            font-weight: bold;
+            margin-top: 20px; 
+            margin-bottom: 25px; 
+            text-align: center; 
+            width: 100%;
+        }
+        /* Estilo para mostrar erros de validação */
+        .alert-error {
+            padding: 15px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
     </style>
-</head>
-<body>
+@endpush
 
-    <h1>Adicionar Novo Cliente</h1>
+@section('content')
 
-    <form action="{{ route('clientes.store') }}" method="POST">
-        
-        @csrf
+    <h1 class="h1-custom">Adicionar Novo Cliente</h1>
 
-        <div>
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" name="nome" required>
-        </div>
+    <div class="form-container">
+        @if ($errors->any())
+            <div class="alert-error">
+                <p style="font-weight: bold;">Por favor, corrija os seguintes erros:</p>
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <form action="{{ route('clientes.store') }}" method="POST">
+            
+            @csrf
 
-        <div>
-            <label for="telefone">Telefone:</label>
-            <input type="text" id="telefone" name="telefone">
-        </div>
-        
-        <div>
-            <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email">
-        </div>
+            <div>
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" value="{{ old('nome') }}" required>
+            </div>
 
-        <div>
-            <label for="data_nascimento">Data de Nascimento:</label>
-            <input type="date" id="data_nascimento" name="data_nascimento">
-        </div>
+            <div>
+                <label for="telefone">Telefone:</label>
+                <input type="text" id="telefone" name="telefone" value="{{ old('telefone') }}">
+            </div>
+            
+            <div>
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" value="{{ old('email') }}">
+            </div>
 
-        <div>
-            <label for="observacoes">Observações:</label>
-            <textarea id="observacoes" name="observacoes" rows="3"></textarea>
-        </div>
+            <div>
+                <label for="data_nascimento">Data de Nascimento (Aniversário):</label>
+                <input type="date" id="data_nascimento" name="data_nascimento" value="{{ old('data_nascimento') }}">
+            </div>
 
-        <div class="btn-container">
-            <a href="{{ route('clientes.index') }}" class="btn btn-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Salvar Cliente</button>
-        </div>
+            <div>
+                <label for="observacoes">Observações:</label>
+                <textarea id="observacoes" name="observacoes" rows="3">{{ old('observacoes') }}</textarea>
+            </div>
 
-    </form>
+            <div class="btn-container">
+                <a href="{{ route('clientes.index') }}" class="btn-form btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-form btn-primary">Salvar Cliente</button>
+            </div>
 
-</body>
-</html>
+        </form>
+    </div>
+
+@endsection

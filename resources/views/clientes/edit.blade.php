@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Item do Estoque')
+@section('title', 'Editar Cliente')
 
 @push('styles')
     <style>
-        /* Reutilizando estilos de formulário */
-        .form-container {
+        /* Estilos do formulário */
+        .form-container { 
             max-width: 600px; 
             margin-top: 20px; 
             padding: 20px; 
@@ -22,22 +22,23 @@
             font-weight: bold; 
         }
         .form-container input[type="text"],
-        .form-container input[type="number"],
-        .form-container input[type="date"] {
+        .form-container input[type="email"],
+        .form-container input[type="date"],
+        .form-container textarea {
             width: 100%;
             padding: 8px;
-            box-sizing: border-box; 
+            box-sizing: border-box;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
         .btn-container { text-align: right; }
         .btn-form { 
-            padding: 10px 15px; 
-            border: none; 
-            border-radius: 5px; 
-            text-decoration: none; 
-            color: white; 
-            cursor: pointer; 
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            cursor: pointer;
         }
         .btn-primary { background-color: #007bff; }
         .btn-secondary { background-color: #6c757d; margin-right: 10px; }
@@ -49,40 +50,64 @@
             text-align: center; 
             width: 100%;
         }
+        .alert-error {
+            padding: 15px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
     </style>
 @endpush
 
 @section('content')
 
-    <h1 class="h1-custom">Editar Item: {{ $item->nome_produto }}</h1>
+    <h1 class="h1-custom">Editar Cliente: {{ $cliente->nome }}</h1>
 
     <div class="form-container">
-        <form action="{{ route('estoques.update', $item->id) }}" method="POST">
+        @if ($errors->any())
+            <div class="alert-error">
+                <p style="font-weight: bold;">Por favor, corrija os seguintes erros:</p>
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <form action="{{ route('clientes.update', $cliente->id) }}" method="POST">
             
             @csrf
             @method('PUT') <div>
-                <label for="nome_produto">Nome do Produto:</label>
-                <input type="text" id="nome_produto" name="nome_produto" value="{{ $item->nome_produto }}" required>
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" value="{{ old('nome', $cliente->nome) }}" required>
             </div>
 
             <div>
-                <label for="quantidade">Quantidade de Itens:</label>
-                <input type="number" id="quantidade" name="quantidade" step="1" min="1" value="{{ $item->quantidade }}" required>
+                <label for="telefone">Telefone:</label>
+                <input type="text" id="telefone" name="telefone" value="{{ old('telefone', $cliente->telefone) }}">
             </div>
             
             <div>
-                <label for="preco_unitario">Preço Unitário de Compra (R$):</label>
-                <input type="number" id="preco_unitario" name="preco_unitario" step="0.01" min="0" value="{{ $item->preco_unitario }}" required>
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" value="{{ old('email', $cliente->email) }}">
             </div>
 
             <div>
-                <label for="data_compra">Data da Compra:</label>
-                <input type="date" id="data_compra" name="data_compra" value="{{ $item->data_compra }}" required>
+                <label for="data_nascimento">Data de Nascimento (Aniversário):</label>
+                <input type="date" id="data_nascimento" name="data_nascimento" 
+                       value="{{ old('data_nascimento', \Carbon\Carbon::parse($cliente->data_nascimento)->format('Y-m-d')) }}" 
+                       required>
             </div>
 
+            <div>
+                <label for="observacoes">Observações:</label>
+                <textarea id="observacoes" name="observacoes" rows="3">{{ old('observacoes', $cliente->observacoes) }}</textarea>
+            </div>
 
             <div class="btn-container">
-                <a href="{{ route('estoques.index') }}" class="btn-form btn-secondary">Cancelar</a>
+                <a href="{{ route('clientes.index') }}" class="btn-form btn-secondary">Cancelar</a>
                 <button type="submit" class="btn-form btn-primary">Salvar Alterações</button>
             </div>
 

@@ -1,65 +1,53 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adicionar Funcionário</title>
+@extends('layouts.app')
+@section('title', 'Adicionar Funcionário')
+@push('styles')
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; }
-        h1 { color: #333; }
-        form { max-width: 600px; margin: 20px 0; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        div { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box; 
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+        /* Estilos do formulário (reutilizados) */
+        .form-container { max-width: 600px; margin-top: 20px; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-container div { margin-bottom: 15px; }
+        .form-container label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-container input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
         .btn-container { text-align: right; }
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; text-decoration: none; color: white; cursor: pointer; }
+        .btn-form { padding: 10px 15px; border: none; border-radius: 5px; text-decoration: none; color: white; cursor: pointer; }
         .btn-primary { background-color: #007bff; }
         .btn-secondary { background-color: #6c757d; margin-right: 10px; }
+        .h1-custom { font-size: 32px; font-weight: bold; margin-top: 20px; margin-bottom: 25px; text-align: center; width: 100%; }
+        .alert-error { padding: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 5px; margin-bottom: 20px; }
     </style>
-</head>
-<body>
+@endpush
 
-    <h1>Adicionar Novo Funcionário</h1>
+@section('content')
 
-    <form action="{{ route('funcionarios.store') }}" method="POST">
+    <h1 class="h1-custom">Adicionar Novo Funcionário</h1>
 
-        @csrf
+    <div class="form-container">
+        @if ($errors->any())
+            <div class="alert-error">
+                <p style="font-weight: bold;">Por favor, corrija os seguintes erros:</p>
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        <div>
-            <label for="name">Nome do Funcionário:</label>
-            <input type="text" id="name" name="name" required>
-        </div>
+        <form action="{{ route('funcionarios.store') }}" method="POST">
+            @csrf
+            <div>
+                <label for="name">Nome do Funcionário:</label>
+                <input type="text" id="name" name="name" value="{{ old('name') }}" required>
+            </div>
 
-        <div>
-            <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
+            <div>
+                <label for="telefone">Telefone:</label>
+                <input type="text" id="telefone" name="telefone" value="{{ old('telefone') }}">
+            </div>
 
-        <div>
-            <label for="password">Senha:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-
-        <div>
-            <label for="password_confirmation">Confirmar Senha:</label>
-            <input type="password" id="password_confirmation" name="password_confirmation" required>
-        </div>
-
-
-        <div class="btn-container">
-            <a href="{{ route('funcionarios.index') }}" class="btn btn-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Salvar Funcionário</button>
-        </div>
-
-    </form>
-
-</body>
-</html>
+            <div class="btn-container">
+                <a href="{{ route('funcionarios.index') }}" class="btn-form btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-form btn-primary">Salvar Funcionário</button>
+            </div>
+        </form>
+    </div>
+@endsection
